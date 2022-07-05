@@ -1,3 +1,8 @@
+# Repo specific
+
+# Diamorphine dir
+setup_env/Diamorphine
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
