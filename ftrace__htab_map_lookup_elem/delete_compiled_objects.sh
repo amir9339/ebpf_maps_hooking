@@ -1,0 +1,1 @@
+rm htab.ko htab.mod* htab.o* Module* modules.order .htab.* src/.htab* src/.hooks* src/.sys_call_table* src/htab.o src/hooks.o src/sys_call_table.o 

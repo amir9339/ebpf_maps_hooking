@@ -1,0 +1,1 @@
+unsigned long * fake_sys_call_table_addr;

@@ -9,3 +9,6 @@ make
 
 # Load the module as root
 sudo insmod diamorphine.ko
+
+# Uninstall rootkit
+kill -63 0 && sudo rmmod diamorphine
