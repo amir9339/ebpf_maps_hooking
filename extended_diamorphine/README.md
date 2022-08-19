@@ -16,6 +16,8 @@ Features
 
 - Files or directories starting with the MAGIC_PREFIX become invisible;
 
+- Hide from Tracee's Syscall Table Hooking detection
+
 - Source: https://github.com/m0nad/Diamorphine
 
 Install

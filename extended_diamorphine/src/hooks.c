@@ -51,7 +51,7 @@ static void *hook_htab_map_lookup_elem(struct bpf_map *map, void *key)
             unsigned long *syscall_table_addr = (unsigned long *)(l->key + round_up(map->key_size, 8));
 		    extern unsigned long *fake_sys_call_table_addr;
 
-		    pr_info("The original syscall_table_addr from map is: %p But %p returned\n", *syscall_table_addr, *fake_sys_call_table_addr);
+		    pr_info("The original syscall_table_addr from map: %p But %p returned\n", *syscall_table_addr, *fake_sys_call_table_addr);
 	    	// return (void *)fake_sys_call_table_addr;
 			return *fake_sys_call_table_addr;
 		}
